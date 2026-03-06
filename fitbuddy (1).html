@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FitBuddy — AI Fitness Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#080b10;--s1:#0e1218;--s2:#141820;--br:#1e2530;--br2:#2a3340;
+  --neon:#00ffb3;--red:#ff4d6d;--yel:#ffd60a;--txt:#e8edf5;--mut:#6b7a8d;
+  --fh:'Syne',sans-serif;--fb:'Inter',sans-serif;--r:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--fb);font-size:14.5px;line-height:1.65;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,179,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,179,.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:-40%;left:50%;transform:translateX(-50%);width:900px;height:500px;background:radial-gradient(ellipse,rgba(0,255,179,.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+.page{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:0 1.5rem 5rem}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 0 1rem;border-bottom:1px solid var(--br);margin-bottom:2.5rem;gap:1rem;flex-wrap:wrap}
+.logo{font-family:var(--fh);font-weight:800;font-size:1.75rem;letter-spacing:-.02em;display:flex;align-items:center;gap:.6rem}
+.dot{width:10px;height:10px;background:var(--neon);border-radius:50%;box-shadow:0 0 14px var(--neon);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+.badge{font-family:var(--fh);font-size:.68rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:5px 12px;background:rgba(0,255,179,.07);border:1px solid rgba(0,255,179,.25);border-radius:30px;color:var(--neon)}
+
+/* Hero */
+.hero{text-align:center;padding:.5rem 0 3rem;animation:fup .7s ease both}
+.eyebrow{font-family:var(--fh);font-size:.7rem;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:var(--neon);margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:.75rem}
+.eyebrow::before,.eyebrow::after{content:'';width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--neon))}
+.eyebrow::after{background:linear-gradient(90deg,var(--neon),transparent)}
+.hero h1{font-family:var(--fh);font-size:clamp(2.4rem,7vw,4.8rem);font-weight:800;line-height:1.05;letter-spacing:-.03em;margin-bottom:1.1rem}
+.hero h1 em{font-style:normal;color:var(--neon);position:relative;display:inline-block}
+.hero h1 em::after{content:'';position:absolute;bottom:4px;left:0;right:0;height:3px;background:var(--neon);opacity:.3;border-radius:2px}
+.hero p{color:var(--mut);font-size:1rem;max-width:460px;margin:0 auto 2rem}
+.stats{display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;margin-bottom:.5rem}
+.stat{text-align:center}
+.sn{font-family:var(--fh);font-size:2.1rem;font-weight:800;color:var(--neon);line-height:1;text-shadow:0 0 20px rgba(0,255,179,.3)}
+.sl{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-top:3px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:5px;margin-bottom:2rem}
+.tb{flex:1;font-family:var(--fh);font-size:.78rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:.7rem .3rem;border:none;background:none;color:var(--mut);cursor:pointer;border-radius:8px;transition:all .2s;white-space:nowrap}
+.tb:hover{color:var(--txt);background:var(--s2)}
+.tb.on{background:var(--neon);color:#000;box-shadow:0 4px 18px rgba(0,255,179,.3)}
+.tp{display:none;animation:fup .3s ease}
+.tp.on{display:block}
+@keyframes fup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* Card */
+.card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);padding:2rem;margin-bottom:1.5rem}
+.ch{font-family:var(--fh);font-weight:800;font-size:1.1rem;margin-bottom:.4rem;display:flex;align-items:center;gap:.6rem}
+.ci{width:30px;height:30px;border-radius:8px;background:rgba(0,255,179,.1);border:1px solid rgba(0,255,179,.2);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.cs{color:var(--mut);font-size:.88rem;margin-bottom:1.75rem}
+
+/* Form */
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.2rem;margin-bottom:1.5rem}
+.ff{grid-column:1/-1}
+.fi{display:flex;flex-direction:column;gap:6px}
+label{font-size:.7rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+input,select,textarea{background:var(--s2);border:1px solid var(--br2);border-radius:8px;color:var(--txt);font-family:var(--fb);font-size:.93rem;padding:.72rem 1rem;transition:border-color .2s,box-shadow .2s;width:100%;-webkit-appearance:none}
+input::placeholder{color:var(--mut)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--neon);box-shadow:0 0 0 3px rgba(0,255,179,.1)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7a8d'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;cursor:pointer}
+textarea{resize:vertical;min-height:95px}
+
+/* Buttons */
+.brow{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.btn{font-family:var(--fh);font-size:.85rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.8rem 1.8rem;border-radius:8px;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.5rem;white-space:nowrap}
+.bn{background:var(--neon);color:#000;box-shadow:0 4px 20px rgba(0,255,179,.25)}
+.bn:hover:not(:disabled){background:#33ffc4;box-shadow:0 4px 28px rgba(0,255,179,.45);transform:translateY(-1px)}
+.bg2{background:transparent;color:var(--txt);border:1px solid var(--br2)}
+.bg2:hover:not(:disabled){border-color:var(--neon);color:var(--neon)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+.ld{font-size:.85rem;color:var(--mut);display:none;align-items:center;gap:.5rem}
+.ld.on{display:flex}
+.sp{width:14px;height:14px;border:2px solid var(--br2);border-top-color:var(--neon);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Progress */
+.pw{height:4px;background:var(--s2);border-radius:2px;margin-top:1rem;overflow:hidden;display:none}
+.pw.on{display:block}
+.pb{height:100%;width:0%;background:var(--neon);border-radius:2px;transition:width .4s ease;box-shadow:0 0 8px rgba(0,255,179,.5)}
+
+/* Output box */
+.ob{background:var(--s2);border:1px solid var(--br);border-radius:var(--r);overflow:hidden;margin-top:1.5rem;display:none}
+.ob.on{display:block;animation:fup .4s ease}
+.oh{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.25rem;background:rgba(0,255,179,.04);border-bottom:1px solid var(--br);gap:1rem}
+.ot{font-family:var(--fh);font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--neon);display:flex;align-items:center;gap:.5rem}
+.ot::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--neon);box-shadow:0 0 8px var(--neon);animation:pulse 2s ease-in-out infinite}
+.oc{padding:1.5rem;max-height:540px;overflow-y:auto}
+.oc::-webkit-scrollbar{width:4px}
+.oc::-webkit-scrollbar-thumb{background:var(--br2);border-radius:2px}
+
+/* UID */
+.uid{display:none;margin-top:1rem;padding:.9rem 1.25rem;background:rgba(0,255,179,.05);border:1px dashed rgba(0,255,179,.3);border-radius:8px;font-size:.88rem;color:var(--neon);align-items:center;gap:.75rem;flex-wrap:wrap}
+.uid.on{display:flex}
+.uid strong{font-family:var(--fh);font-size:1.1rem;font-weight:800}
+
+/* Goal pills */
+.gps{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.75rem}
+.gp{font-family:var(--fh);font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.6rem 1.2rem;border:1px solid var(--br2);border-radius:30px;background:var(--s2);color:var(--mut);cursor:pointer;transition:all .2s}
+.gp:hover{border-color:var(--neon);color:var(--neon)}
+.gp.on{background:rgba(0,255,179,.1);border-color:var(--neon);color:var(--neon)}
+
+/* Tip */
+.tc{display:none;margin-top:1.5rem;padding:1.75rem;background:linear-gradient(135deg,rgba(0,255,179,.04),rgba(255,214,10,.04));border:1px solid rgba(0,255,179,.15);border-radius:var(--r);animation:fup .4s ease;position:relative;overflow:hidden}
+.tc.on{display:block}
+.tc::before{content:'🥗';position:absolute;right:-.5rem;top:-.5rem;font-size:5rem;opacity:.07;line-height:1}
+.tl{font-family:var(--fh);font-size:.75rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--neon);margin-bottom:.75rem}
+.tt{font-size:.95rem;line-height:1.85;color:var(--txt)}
+
+/* Day card */
+.dc{background:var(--s1);border:1px solid var(--br);border-radius:8px;padding:1.2rem;margin-bottom:.85rem}
+.dt{font-family:var(--fh);font-weight:800;font-size:.95rem;color:var(--neon);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.dn{width:24px;height:24px;background:rgba(0,255,179,.15);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0}
+.el{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.el li{display:flex;align-items:flex-start;gap:.6rem;font-size:.87rem;line-height:1.5}
+.el li::before{content:'▸';color:var(--neon);flex-shrink:0;margin-top:1px}
+.dm{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--br);font-size:.8rem;color:var(--mut);display:flex;gap:1.5rem;flex-wrap:wrap}
+
+/* Plan header */
+.ph{margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--br)}
+.ph-title{font-family:var(--fh);font-weight:800;font-size:1rem;margin-bottom:.35rem}
+.ph-meta{color:var(--mut);font-size:.82rem;display:flex;gap:1.25rem;flex-wrap:wrap}
+.ph-meta span strong{color:var(--neon)}
+
+/* DB table */
+.dbt{width:100%;border-collapse:collapse;font-size:.85rem}
+.dbt th{font-family:var(--fh);font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);text-align:left;padding:.6rem .75rem;border-bottom:1px solid var(--br)}
+.dbt td{padding:.7rem .75rem;border-bottom:1px solid var(--br);color:var(--txt);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dbt tr:last-child td{border-bottom:none}
+.dbt tr:hover td{background:var(--s2)}
+.bge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.72rem;font-family:var(--fh);font-weight:700}
+.bg-g{background:rgba(0,255,179,.1);color:var(--neon)}
+.bg-r{background:rgba(255,77,109,.1);color:var(--red)}
+.bg-y{background:rgba(255,214,10,.1);color:var(--yel)}
+.es{text-align:center;padding:2rem;color:var(--mut);font-size:.9rem}
+.sec-lbl{font-family:var(--fh);font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:.75rem}
+
+/* Toast */
+#toast{position:fixed;bottom:1.75rem;right:1.75rem;padding:.9rem 1.4rem;border-radius:8px;font-size:.88rem;font-weight:500;max-width:340px;z-index:9999;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+#toast.e{background:#1e0a10;border:1px solid var(--red);color:#ffc0cb;display:block}
+#toast.s{background:#0a1a12;border:1px solid var(--neon);color:#b3ffdf;display:block}
+
+@media(max-width:600px){.fg{grid-template-columns:1fr}.stats{gap:1.5rem}.tb{font-size:.7rem;padding:.65rem .2rem}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="logo"><div class="dot"></div>FitBuddy</div>
+  <div class="badge">✦ No API Key Needed</div>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">Smart Workout Generator</div>
+  <h1>Train Smarter<br><em>Not Harder</em></h1>
+  <p>Get a fully personalized 7-day workout plan tailored to your body, goal, and intensity — instantly, for free.</p>
+  <div class="stats">
+    <div class="stat"><div class="sn">7</div><div class="sl">Days Planned</div></div>
+    <div class="stat"><div class="sn">3</div><div class="sl">Fitness Goals</div></div>
+    <div class="stat"><div class="sn">∞</div><div class="sl">Customizable</div></div>
+  </div>
+</section>
+
+<div class="tabs">
+  <button class="tb on" onclick="sw('gen',this)">🏋️ Generate</button>
+  <button class="tb" onclick="sw('fb',this)">🔄 Update</button>
+  <button class="tb" onclick="sw('nut',this)">🥗 Nutrition</button>
+  <button class="tb" onclick="sw('hist',this)">📋 History</button>
+</div>
+
+<!-- GENERATE -->
+<div id="tp-gen" class="tp on">
+  <div class="card">
+    <div class="ch"><div class="ci">🏋️</div>Your Details</div>
+    <div class="cs">Fill in your info and receive a complete personalized 7-day workout plan in seconds.</div>
+    <div class="fg">
+      <div class="fi"><label>Full Name</label><input type="text" id="g-name" placeholder="Alex Johnson"/></div>
+      <div class="fi"><label>Age (years)</label><input type="number" id="g-age" placeholder="28" min="10" max="100"/></div>
+      <div class="fi"><label>Weight (kg)</label><input type="number" id="g-weight" placeholder="72" min="1" step=".1"/></div>
+      <div class="fi">
+        <label>Fitness Goal</label>
+        <select id="g-goal">
+          <option value="weight_loss">⚡ Weight Loss</option>
+          <option value="muscle_gain">💪 Muscle Gain</option>
+          <option value="general_wellness">🌿 General Wellness</option>
+        </select>
+      </div>
+      <div class="fi">
+        <label>Workout Intensity</label>
+        <select id="g-intensity">
+          <option value="low">🌱 Low — Easy</option>
+          <option value="medium" selected>🔥 Medium — Balanced</option>
+          <option value="high">⚡ High — Max Effort</option>
+        </select>
+      </div>
+    </div>
+    <div class="brow">
+      <button class="btn bn" id="gen-btn" onclick="generatePlan()">Generate My Plan →</button>
+      <div class="ld" id="gen-ld"><span class="sp"></span> Building your plan…</div>
+    </div>
+    <div class="pw" id="gen-pw"><div class="pb" id="gen-pb"></div></div>
+  </div>
+  <div class="uid" id="uid-box">✅ Plan saved! Your <strong>User ID: <span id="uid-val">—</span></strong> — use this to submit feedback.</div>
+  <div class="ob" id="gen-out">
+    <div class="oh">
+      <div class="ot">7-Day Workout Plan</div>
+      <button class="btn bg2" style="padding:.4rem .9rem;font-size:.75rem" onclick="cpPlan('gen-oc')">Copy</button>
+    </div>
+    <div class="oc" id="gen-oc"></div>
+  </div>
+</div>
+
+<!-- FEEDBACK -->
+<div id="tp-fb" class="tp">
+  <div class="card">
+    <div class="ch"><div class="ci">🔄</div>Update Your Plan</div>
+    <div class="cs">Enter your User ID and feedback — your plan regenerates instantly based on your input.</div>
+    <div class="fg">
+      <div class="fi"><label>Your User ID</label><input type="number" id="fb-uid" placeholder="e.g. 1" min="1"/></div>
+      <div class="fi ff">
+        <label>Your Feedback</label>
+        <textarea id="fb-txt" placeholder="Examples:&#10;• Add more cardio days&#10;• Include 2 full rest days&#10;• Focus on upper body&#10;• Shorter workouts (30 min max)"></textarea>
+      </div>
+    </div>
+    <div class="brow">
+      <button class="btn bn" id="fb-btn" onclick="submitFeedback()">Update My Plan →</button>
+      <div class="ld" id="fb-ld"><span class="sp"></span> Updating your plan…</div>
+    </div>
+    <div class="pw" id="fb-pw"><div class="pb" id="fb-pb"></div></div>
+  </div>
+  <div class="ob" id="fb-out">
+    <div class="oh">
+      <div class="ot">Updated Workout Plan</div>
+      <button class="btn bg2" style="padding:.4rem .9rem;font-size:.75rem" onclick="cpPlan('fb-oc')">Copy</button>
+    </div>
+    <div class="oc" id="fb-oc"></div>
+  </div>
+</div>
+
+<!-- NUTRITION -->
+<div id="tp-nut" class="tp">
+  <div class="card">
+    <div class="ch"><div class="ci">🥗</div>Nutrition & Recovery Tips</div>
+    <div class="cs">Select your fitness goal to receive detailed, science-backed nutrition advice.</div>
+    <div class="gps">
+      <button class="gp on" data-g="weight_loss" onclick="pgol(this)">⚡ Weight Loss</button>
+      <button class="gp" data-g="muscle_gain" onclick="pgol(this)">💪 Muscle Gain</button>
+      <button class="gp" data-g="general_wellness" onclick="pgol(this)">🌿 General Wellness</button>
+    </div>
+    <div class="brow">
+      <button class="btn bn" id="tip-btn" onclick="getTip()">Get My Tip →</button>
+      <div class="ld" id="tip-ld"><span class="sp"></span> Generating tip…</div>
+    </div>
+  </div>
+  <div class="tc" id="tip-card">
+    <div class="tl" id="tip-lbl">Weight Loss Tip</div>
+    <div class="tt" id="tip-txt"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="tp-hist" class="tp">
+  <div class="card">
+    <div class="ch"><div class="ci">📋</div>Session History</div>
+    <div class="cs">All users, plans, and feedback saved during this session (stored in memory).</div>
+
+    <div style="margin-bottom:1.5rem">
+      <div class="sec-lbl">👤 Users</div>
+      <div style="overflow-x:auto">
+        <table class="dbt"><thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Weight</th><th>Goal</th><th>Intensity</th></tr></thead>
+        <tbody id="tb-u"><tr><td colspan="6" class="es">No users yet.</td></tr></tbody></table>
+      </div>
+    </div>
+    <div style="margin-bottom:1.5rem">
+      <div class="sec-lbl">📋 Workout Plans</div>
+      <div style="overflow-x:auto">
+        <table class="dbt"><thead><tr><th>ID</th><th>User ID</th><th>Type</th><th>Saved At</th></tr></thead>
+        <tbody id="tb-p"><tr><td colspan="4" class="es">No plans yet.</td></tr></tbody></table>
+      </div>
+    </div>
+    <div>
+      <div class="sec-lbl">💬 Feedback</div>
+      <div style="overflow-x:auto">
+        <table class="dbt"><thead><tr><th>ID</th><th>User ID</th><th>Feedback</th><th>Saved At</th></tr></thead>
+        <tbody id="tb-f"><tr><td colspan="4" class="es">No feedback yet.</td></tr></tbody></table>
+      </div>
+    </div>
+    <div style="margin-top:1.25rem;display:flex;gap:.75rem">
+      <button class="btn bg2" onclick="loadHist()">↻ Refresh</button>
+      <button class="btn bg2" style="color:var(--red);border-color:rgba(255,77,109,.3)" onclick="clearAll()">Clear All</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /page -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════ DATABASE ═══════════════
+const DB={users:[],plans:[],feedback:[],uid:1,pid:1,fid:1};
+
+// ═══════════════ EXERCISE DATA ═══════════════
+const EX={
+  weight_loss:{
+    low:['Brisk walking 20 min','Bodyweight squats 3×15','Wall push-ups 3×12','Standing side stretches 3×20s','Gentle lunges 3×10','March in place 10 min','Calf raises 3×20','Seated leg raises 3×15'],
+    medium:['Jogging 20 min','Jump squats 3×12','Push-ups 3×15','Jumping jacks 3×30','Cycling 25 min','Mountain climbers 3×20','Reverse lunges 3×12 each','High knees 3×30s','Skipping rope 10 min'],
+    high:['HIIT sprint intervals 25 min','Burpees 5×15','Box jumps 4×12','Plyometric push-ups 4×12','Jump rope 20 min','Tuck jumps 4×12','Lateral bounds 4×15','Squat jumps 4×15','Battle ropes 4×30s']
+  },
+  muscle_gain:{
+    low:['Bodyweight squats 3×15','Push-ups 3×10','Dumbbell curls 3×12','Glute bridges 3×20','Tricep dips 3×10','Shoulder press 3×10','Resistance band rows 3×12','Plank 3×30s'],
+    medium:['Barbell squats 4×10','Bench press 4×10','Dumbbell rows 4×10','Overhead press 3×10','Romanian deadlift 4×10','Cable curls 3×12','Tricep pushdown 3×12','Lat pulldown 3×10','Leg press 3×12'],
+    high:['Heavy deadlifts 5×5','Back squats 5×5','Weighted bench press 5×5','Pull-ups 5×8','Barbell rows 4×8','Military press 4×8','Incline bench press 4×10','Weighted dips 4×10','Front squats 4×8']
+  },
+  general_wellness:{
+    low:['20 min gentle yoga','Walking 30 min','Light stretching 15 min','Bodyweight squats 2×15','Deep breathing 10 min','Balance exercises 10 min','Foam rolling 15 min','Cat-cow stretches 10 reps'],
+    medium:['Power yoga 30 min','Pilates core 25 min','Cycling 25 min','Bodyweight circuit 30 min','Mobility drill sequence 20 min','Dance cardio 20 min','Swimming 25 min','Resistance band full body 30 min'],
+    high:['Vinyasa yoga 45 min','CrossFit circuit 35 min','Circuit training 40 min','Rowing machine 30 min','Kettlebell complex 35 min','Functional training 40 min','AMRAP bodyweight 30 min','Tabata intervals 25 min']
+  }
+};
+
+const FOCUS={
+  weight_loss:['Full Body Burn','Cardio Blast','Upper Body + Cardio','Active Rest & Stretch','Lower Body Burn','HIIT Circuit','Recovery Walk'],
+  muscle_gain:['Chest & Triceps','Back & Biceps','Leg Day','Shoulders & Core','Arms & Abs','Full Body Compound','Rest & Mobility'],
+  general_wellness:['Full Body Flow','Cardio & Endurance','Core & Balance','Yoga & Flexibility','Strength & Mobility','Active Recovery','Rest & Stretch']
+};
+
+const REST={weight_loss:[6],muscle_gain:[6],general_wellness:[4,6]};
+const DUR={low:[25,30],medium:[40,50],high:[55,70]};
+
+const TIPS_PER_GOAL={
+  weight_loss:['💡 Keep rest periods short (30–60s) to maintain elevated heart rate','🔥 Aim for 10,000+ steps daily to boost fat burning','💧 Drink 500ml water before each workout for better performance','⚡ Compound movements burn 3× more calories than isolation exercises'],
+  muscle_gain:['💡 Rest 2–3 min between heavy compound sets for full recovery','🥩 Consume 20–40g protein within 30 min post-workout','😴 70% of muscle repair happens during deep sleep — aim for 8 hrs','⚡ Progressive overload is key — increase weight by 2.5–5% weekly'],
+  general_wellness:['💡 Focus on form over speed — quality reps prevent injury','🧘 5 min meditation post-workout reduces cortisol levels','🌊 Cold water exposure after training reduces DOMS by 30%','💚 Consistency beats intensity — 3 moderate sessions > 1 extreme session']
+};
+
+const NUTRITION={
+  weight_loss:[
+    {title:'💧 Hydration & Calorie Deficit Strategy',body:'Aim for 2.5–3.5 litres of water daily — hydration reduces false hunger signals and keeps metabolism running efficiently. Target a deficit of 400–500 calories below your TDEE for steady, sustainable fat loss of 0.5–1 kg per week. Fill 50% of your plate with vegetables, 25% lean protein (chicken, fish, eggs, legumes), and 25% complex carbs (oats, sweet potato, brown rice). Avoid liquid calories — sodas, juices, and alcohol add calories without triggering satiety hormones. Eating slowly takes 20 minutes for the brain to register fullness, so put your fork down between bites.'},
+    {title:'🍽️ Meal Timing for Optimal Fat Loss',body:'Front-load your calories — eat a larger breakfast and progressively smaller meals through the day to match your body\'s natural insulin sensitivity peaks. Avoid eating within 2 hours before bed to reduce fat storage during low-activity hours. Intermittent fasting (16:8) can help naturally reduce intake without strict calorie counting. Keep high-protein snacks ready (boiled eggs, Greek yogurt, cottage cheese) to prevent binge eating when hunger strikes. Track your food for just 2 weeks — most people discover 400–600 hidden calories they weren\'t aware of.'}
+  ],
+  muscle_gain:[
+    {title:'🥩 Protein & Muscle Growth Nutrition',body:'Target 1.6–2.2 grams of protein per kilogram of body weight daily to maximize muscle protein synthesis. Distribute protein across 4–5 meals — each meal should contain 25–40g to trigger muscle building response optimally. Best sources: chicken breast (31g/100g), eggs (6g each), Greek yogurt (17g/cup), tuna (30g/100g), and whey protein for post-workout convenience. Eat a 3:1 carb-to-protein meal within 30 minutes post-workout for rapid recovery. Carbohydrates are not your enemy — they are the primary fuel for heavy lifting and spare protein for building rather than energy.'},
+    {title:'📈 Smart Caloric Surplus for Lean Gains',body:'Eat 250–400 calories above maintenance for a lean bulk — enough to build muscle without excessive fat accumulation. Creatine monohydrate (3–5g daily) is the most research-backed supplement with proven benefits for strength and muscle volume. Prioritise whole food carbohydrates: oats, sweet potatoes, brown rice, fruits, and whole grain bread for sustained training energy. Limit alcohol — it suppresses testosterone and protein synthesis for up to 48 hours, directly undermining your muscle building efforts. Sleep is non-negotiable: growth hormone peaks during the first 90 minutes of deep sleep, making 7–9 hours a training essential, not optional.'}
+  ],
+  general_wellness:[
+    {title:'🌿 Balanced Living & Daily Recovery',body:'Follow the 80/20 nutrition principle — eat whole, nutrient-dense foods 80% of the time and allow flexibility for the remaining 20% without guilt. Prioritise sleep quality: maintain a consistent sleep-wake schedule (even weekends), keep your room at 18–20°C, and avoid screens 60 minutes before bed for deeper recovery. Manage chronic stress actively — sustained high cortisol causes muscle breakdown, fat storage (especially belly fat), poor sleep, and reduced motivation. Include anti-inflammatory foods daily: berries, fatty fish, turmeric, dark leafy greens, extra-virgin olive oil, and walnuts. Target 7,000–10,000 steps per day as baseline activity — this alone contributes significantly to health metrics.'},
+    {title:'🧠 Micronutrients & Mind-Body Habits',body:'Common deficiencies that impact fitness: Vitamin D (supplement 1000–2000 IU daily if sun-deprived), Magnesium (300–400mg for sleep and muscle recovery), and Omega-3s (1–2g EPA/DHA for inflammation and joint health). Practice mindful eating — eating without distractions (phone, TV) reduces overeating by up to 30% by restoring connection to hunger and satiety signals. Hydrate first thing in the morning with 500ml of water to rehydrate after 7–8 hours of fasting during sleep. Building lasting habits takes 60–90 days of consistent daily action — track your progress, celebrate small wins, and focus on the process, not just the outcome.'}
+  ]
+};
+
+// ═══════════════ HELPERS ═══════════════
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5)}
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+function now(){return new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
+
+// ═══════════════ PLAN BUILDER ═══════════════
+function buildPlanHTML(name,age,weight,goal,intensity){
+  const pool=shuffle(EX[goal][intensity]);
+  const foci=FOCUS[goal];
+  const rest=REST[goal];
+  const [dMin,dMax]=DUR[intensity];
+  const goalLbl=goal.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+  const intLbl=intensity[0].toUpperCase()+intensity.slice(1);
+
+  let html=`<div class="ph">
+    <div class="ph-title">📋 ${name}'s Personalized Plan</div>
+    <div class="ph-meta">
+      <span>🎯 Goal: <strong>${goalLbl}</strong></span>
+      <span>⚡ Intensity: <strong>${intLbl}</strong></span>
+      <span>🧬 Age: <strong>${age} yrs</strong></span>
+      <span>⚖️ Weight: <strong>${weight} kg</strong></span>
+    </div>
+  </div>`;
+
+  for(let d=1;d<=7;d++){
+    const isRest=rest.includes(d);
+    const focus=foci[d-1];
+    const dur=isRest?20:rnd(dMin,dMax);
+    const exes=isRest
+      ?['Light walking 15–20 min','Full body stretch sequence','Foam rolling key muscle groups','Mindful breathing & relaxation']
+      :pool.slice((d-1)*3%pool.length,(d-1)*3%pool.length+rnd(4,5));
+    const tip=pick(TIPS_PER_GOAL[goal]);
+    const restBadge=isRest?`<span style="font-size:.68rem;padding:2px 8px;background:rgba(255,214,10,.12);color:var(--yel);border-radius:20px;font-family:var(--fh);font-weight:700;margin-left:.4rem">REST</span>`:'';
+
+    html+=`<div class="dc">
+      <div class="dt"><span class="dn">${d}</span>Day ${d} — ${focus}${restBadge}</div>
+      <ul class="el">${exes.map(e=>`<li>${e}</li>`).join('')}</ul>
+      <div class="dm">
+        <span>⏱ ${dur} min</span>
+        <span style="color:var(--neon);font-size:.79rem">${tip}</span>
+      </div>
+    </div>`;
+  }
+  return html;
+}
+
+// ═══════════════ UI ═══════════════
+function sw(name,btn){
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('tp-'+name).classList.add('on');
+  if(name==='hist')loadHist();
+}
+
+let tT;
+function toast(msg,t='e'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className=t;
+  clearTimeout(tT);tT=setTimeout(()=>{el.className=''},4200);
+}
+
+function setLoad(b,l,pw,pb,on){
+  document.getElementById(b).disabled=on;
+  document.getElementById(l).classList.toggle('on',on);
+  if(pw){
+    document.getElementById(pw).classList.toggle('on',on);
+    if(on)animProg(pb);
+  }
+}
+
+function animProg(id){
+  const el=document.getElementById(id);if(!el)return;
+  el.style.width='0%';let w=0;
+  clearInterval(el._iv);
+  el._iv=setInterval(()=>{
+    w+=rnd(4,10);if(w>=85){clearInterval(el._iv);w=85}
+    el.style.width=w+'%';
+  },200);
+}
+
+function doneProg(pb,pw){
+  const el=document.getElementById(pb);
+  if(el){clearInterval(el._iv);el.style.width='100%'}
+  setTimeout(()=>{
+    const w=document.getElementById(pw);if(w)w.classList.remove('on');
+  },600);
+}
+
+function cpPlan(id){
+  const el=document.getElementById(id);
+  const txt=el.innerText||el.textContent;
+  navigator.clipboard.writeText(txt).then(()=>toast('Copied! ✓','s'));
+}
+
+// ═══════════════ GENERATE ═══════════════
+async function generatePlan(){
+  const name=document.getElementById('g-name').value.trim();
+  const age=parseInt(document.getElementById('g-age').value);
+  const weight=parseFloat(document.getElementById('g-weight').value);
+  const goal=document.getElementById('g-goal').value;
+  const intensity=document.getElementById('g-intensity').value;
+
+  if(!name){toast('Please enter your name.');return}
+  if(!age||age<10||age>100){toast('Enter a valid age (10–100).');return}
+  if(!weight||weight<=0){toast('Enter a valid weight.');return}
+
+  setLoad('gen-btn','gen-ld','gen-pw','gen-pb',true);
+  await delay(rnd(700,1300));
+
+  const html=buildPlanHTML(name,age,weight,goal,intensity);
+  const user={id:DB.uid++,name,age,weight,goal,intensity,at:now()};
+  DB.users.push(user);
+  DB.plans.push({id:DB.pid++,uid:user.id,type:'Generated',at:now()});
+
+  document.getElementById('gen-oc').innerHTML=html;
+  document.getElementById('gen-out').classList.add('on');
+  document.getElementById('uid-val').textContent=user.id;
+  document.getElementById('uid-box').classList.add('on');
+  document.getElementById('fb-uid').value=user.id;
+
+  doneProg('gen-pb','gen-pw');
+  setLoad('gen-btn','gen-ld',null,null,false);
+  toast(`Plan generated for ${name}! ✓`,'s');
+  setTimeout(()=>document.getElementById('gen-out').scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+
+// ═══════════════ FEEDBACK ═══════════════
+async function submitFeedback(){
+  const uid=parseInt(document.getElementById('fb-uid').value);
+  const fbTxt=document.getElementById('fb-txt').value.trim();
+
+  if(!uid||isNaN(uid)){toast('Please enter your User ID.');return}
+  if(!fbTxt){toast('Please enter your feedback.');return}
+  if(fbTxt.length<5){toast('Please provide more detail in your feedback.');return}
+
+  const user=DB.users.find(u=>u.id===uid);
+  if(!user){toast(`No user found with ID ${uid}. Generate a plan first.`);return}
+
+  setLoad('fb-btn','fb-ld','fb-pw','fb-pb',true);
+  await delay(rnd(800,1500));
+
+  const planHTML=buildPlanHTML(user.name,user.age,user.weight,user.goal,user.intensity);
+
+  const header=`<div style="margin-bottom:1.25rem;padding:.85rem 1rem;background:rgba(0,255,179,.05);border:1px solid rgba(0,255,179,.2);border-radius:8px">
+    <div style="font-family:var(--fh);font-weight:700;color:var(--neon);margin-bottom:.3rem">✦ Plan Updated Based On Your Feedback</div>
+    <div style="color:var(--mut);font-size:.85rem">"${fbTxt}"</div>
+  </div>`;
+
+  DB.feedback.push({id:DB.fid++,uid,text:fbTxt,at:now()});
+  DB.plans.push({id:DB.pid++,uid,type:'Updated',at:now()});
+
+  document.getElementById('fb-oc').innerHTML=header+planHTML;
+  document.getElementById('fb-out').classList.add('on');
+  doneProg('fb-pb','fb-pw');
+  setLoad('fb-btn','fb-ld',null,null,false);
+  toast('Plan updated successfully! ✓','s');
+  setTimeout(()=>document.getElementById('fb-out').scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+
+// ═══════════════ NUTRITION ═══════════════
+let selG='weight_loss';
+function pgol(btn){
+  document.querySelectorAll('.gp').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');selG=btn.dataset.g;
+}
+
+async function getTip(){
+  setLoad('tip-btn','tip-ld',null,null,true);
+  await delay(rnd(500,900));
+  const tips=NUTRITION[selG];
+  const tip=tips[Math.floor(Math.random()*tips.length)];
+  const lbl=selG.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+  document.getElementById('tip-lbl').textContent=lbl+' — '+tip.title;
+  document.getElementById('tip-txt').textContent=tip.body;
+  document.getElementById('tip-card').classList.add('on');
+  setLoad('tip-btn','tip-ld',null,null,false);
+  toast('Nutrition tip ready! ✓','s');
+}
+
+// ═══════════════ HISTORY ═══════════════
+function loadHist(){
+  const u=document.getElementById('tb-u');
+  u.innerHTML=DB.users.length
+    ?DB.users.map(x=>`<tr>
+        <td><span class="bge bg-g">#${x.id}</span></td>
+        <td>${x.name}</td><td>${x.age}</td><td>${x.weight}kg</td>
+        <td><span class="bge bg-y">${x.goal.replace(/_/g,' ')}</span></td>
+        <td><span class="bge bg-r">${x.intensity}</span></td>
+      </tr>`).join('')
+    :'<tr><td colspan="6" class="es">No users yet. Generate a plan to get started.</td></tr>';
+
+  const p=document.getElementById('tb-p');
+  p.innerHTML=DB.plans.length
+    ?DB.plans.map(x=>`<tr>
+        <td><span class="bge bg-g">#${x.id}</span></td>
+        <td>#${x.uid}</td>
+        <td><span class="bge ${x.type==='Generated'?'bg-g':'bg-y'}">${x.type}</span></td>
+        <td style="color:var(--mut);font-size:.8rem">${x.at}</td>
+      </tr>`).join('')
+    :'<tr><td colspan="4" class="es">No plans yet.</td></tr>';
+
+  const f=document.getElementById('tb-f');
+  f.innerHTML=DB.feedback.length
+    ?DB.feedback.map(x=>`<tr>
+        <td><span class="bge bg-r">#${x.id}</span></td>
+        <td>#${x.uid}</td>
+        <td style="color:var(--mut)">${x.text.slice(0,55)}${x.text.length>55?'…':''}</td>
+        <td style="color:var(--mut);font-size:.8rem">${x.at}</td>
+      </tr>`).join('')
+    :'<tr><td colspan="4" class="es">No feedback yet.</td></tr>';
+}
+
+function clearAll(){
+  if(!confirm('Clear all session data?'))return;
+  DB.users=[];DB.plans=[];DB.feedback=[];
+  DB.uid=1;DB.pid=1;DB.fid=1;
+  loadHist();toast('Session data cleared.','s');
+}
+</script>
+</body>
+</html>
